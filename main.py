@@ -2,11 +2,25 @@ import requests
 from bs4 import BeautifulSoup
 
 target_url = "https://atilsamancioglu.com/"
-response = requests.get(target_url)
-data = response.text 
+foundLinks = []
 
-#html parsing
-soup = BeautifulSoup(data, "html.parser")     #BeautifulSoup parses the HTML
-all_a = soup.find_all('a') #search the HTML
-for link in all_a:
-    print(link.get("href"))
+def make_request(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, "html.parser")
+    return soup
+
+
+def crawl(url):
+    links = make_request(url)
+    for link in links.find_all("a"):
+        found_link = link.get("href")
+        if found_link:
+            if '#' in found_link:
+                found_link = found_link.split("#")[0]
+            if target_url in found_link and found_link not in foundLinks:
+                foundLinks.append(found_link)
+                print(found_link)
+                #Recursive
+                crawl(found_link)
+            
+crawl(target_url)
